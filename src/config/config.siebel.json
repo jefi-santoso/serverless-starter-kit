@@ -1,0 +1,20 @@
+{    
+    "sit": {
+        "siebelConfig": {
+            "oagBaseUrl": "https://api-ext-sit.mynrma.com.au",
+            "apigBaseUrl": "https://apin.mynrma.com.au/api/v1/nrmapp/sit",
+            "secrets": {
+                "apigApiKey": "${ssm:siebel-api-member-validation-sit-apikey~true}"
+            }    
+        }                
+    },
+    "uat": {
+        "siebelConfig": {
+            "oagBaseUrl": "https://api-ext-uat.mynrma.com.au",
+            "apigBaseUrl": "https://apin.mynrma.com.au/api/v1/nrmapp/uat",
+            "secrets": {
+                "apigApiKey": "${ssm:siebel-api-member-validation-uat-apikey~true}"
+            }
+        }
+    } 
+}

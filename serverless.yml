@@ -1,0 +1,112 @@
+service: serverless-starter-kit-${self:custom.version}
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  timeout: 30
+  cfLogs: true
+  region: ${opt:region, 'ap-southeast-2'}
+  memorySize: 256 # Overwrite the default memory size. Default is 1024
+  apiKeys:
+    - ${opt:stage}-${self:service}-apiKey
+  stage: ${opt:stage}
+  environment:
+    STAGE: ${opt:stage}
+    LOGLEVEL: "info"
+  deploymentBucket: ${ssm:nrma-serverless-deployment-bucket}-${opt:envType}
+  iamRoleStatements:
+    - Effect: Allow #VPC access
+      Action:
+        - ec2:CreateNetworkInterface
+        - ec2:DescribeNetworkInterfaces
+        - ec2:DeleteNetworkInterface
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - ssm:GetParameters
+      Resource:
+        - "*"
+    - Effect: "Allow"
+      Action:
+        - kms:Decrypt
+        - kms:Encrypt
+      Resource:
+        - "*"
+  vpc:
+    securityGroupIds:
+      - Ref: ServerlessStarterKitSecurityGroup
+    subnetIds:
+      Fn::Split: ["," ,"${opt:subnetId}" ]
+
+custom:
+  version: V1
+
+functions:
+  getApiVersion:
+    handler: handler.getApiVersion
+    events:
+      - http:
+          path: version
+          method: get
+          private: true
+          cors: true
+          documentation:
+            summary: Get API version.
+
+  getNameFromBackend:
+    handler: handler.getNameFromBackend
+    events:
+      - http:
+          path: member/{membernumber}/name
+          method: get
+          private: true
+          cors: true
+          request:
+            parameters:
+              paths:
+                membernumber: true
+          documentation:
+            summary: Get member's name from GMS.
+
+resources:
+  Resources:
+    ServerlessStarterKitSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Security group which allows access on ports 80 but only to machines of this security group.
+        VpcId: ${opt:vpcId}
+        SecurityGroupIngress:
+          -
+            IpProtocol: TCP
+            CidrIp: 0.0.0.0/0
+            FromPort: 80
+            ToPort: 80
+
+    ServerlessStarterKitLogGroup:
+      Type: AWS::Logs::LogGroup
+      Properties:
+        RetentionInDays: "60"
+
+    UsagePlan:
+      Type: "AWS::ApiGateway::UsagePlan"
+      DependsOn: ApiGatewayApiKey1
+      Properties:
+        UsagePlanName: ${opt:stage}-${self:service}
+        ApiStages:
+        - ApiId:
+            Ref: ApiGatewayRestApi
+          Stage: ${opt:stage}
+
+package:
+  exclude:
+   - .gitignore
+   - package.json
+   - test/**
+   - developmentServer.js
+   - .git
+   - .vscode/
+   - node_modules/.bin/**
+
+plugins:
+  - serverless-aws-documentation
+  - serverless-offline

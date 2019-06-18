@@ -1,0 +1,6 @@
+{
+    "env": "test",
+    "otherConfig": {
+        "blah": "other config can be placed here"
+    }
+}

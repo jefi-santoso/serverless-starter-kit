@@ -9,7 +9,7 @@
   "homepage": "https://github.com/NRMA/serverless-starter-kit#readme",
   "dependencies": {
     "aws-sdk": "^2.474.0",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "deepmerge": "^3.2.0",
     "dotenv": "^8.0.0",
     "log-winston-aws-level": "^1.11.0",
